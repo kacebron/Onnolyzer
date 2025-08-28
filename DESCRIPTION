@@ -1,0 +1,16 @@
+Package: Onnolyzer
+Type: Package
+Title: Processes LIFT raw files
+Version: 0.0.1
+Authors@R: 
+    person("Kelvin", "Acebron", , "acebronk@fz-juelich.de", role = c("aut", "cre"))
+Description: Provides functions for processing and analyzing LIFT raw files (_data.csv, _fit.csv, and _spect.csv).
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: data.table, stringr, lubridate, agricolae, plyr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
