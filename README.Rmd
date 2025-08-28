@@ -16,39 +16,91 @@ knitr::opts_chunk$set(
 # Onnolyzer
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/kacebron/Onnolyzer/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/kacebron/Onnolyzer/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of Onnolyzer is to ...
+The goal of Onnolyzer is to aid users of LIFT device mounted ton LIFT to process raw .csv files to derive photosynthetic and statistical parameters (based on Beat Keller and Nicolas Zendonadi)'s published data below:
+
+Keller, B., Vass, I., Matsubara, S., Paul, K., Jedmowski, C., Pieruschka, R., ... & Muller, O. (2019). Maximum fluorescence and electron transport kinetics determined by light-induced fluorescence transients (LIFT) for photosynthesis phenotyping. Photosynthesis Research, 140(2), 221-233.
+
+Zendonadi dos Santos, N., Piepho, H. P., Condorelli, G. E., Licieri Groli, E., Newcomb, M., Ward, R., ... & Muller, O. (2021). High‐throughput field phenotyping reveals genetic variation in photosynthetic traits in durum wheat under drought. Plant, cell & environment, 44(9), 2858-2878.
 
 ## Installation
 
 You can install the development version of Onnolyzer like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+devtools::install_github("kacebron/Onnolyzer")
 ```
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a sample workflow first to correct the date and time (In case you forgot to change / adjust the date and time in LIFT computer before you start your measurement)
 
 ```{r example}
 library(Onnolyzer)
 ## basic example code
+
+# Filename
+data_file_dt <- get_file_datetime("012007~~2025_08_25__13_04_02_436_data.csv", "CET")
+fit_file_dt <- get_file_datetime("012007~~2025_08_25__13_04_02_436_fit", "CET")
+spectra_file_dt <- get_file_datetime("003004~~2025_08_25__12_09_19_859_spectr", "CET")
+
+# Filepath
+data_file_path <- '/Users/kelvinacebron/Documents/1_IBG2/2_Materials/LIFT_ANALYSIS/Sample_data/TimeCorrectionNeeded/012007~~2025_08_25__13_04_02_436_data.csv'
+fit_file_path <- '/Users/kelvinacebron/Documents/1_IBG2/2_Materials/LIFT_ANALYSIS/Sample_data/TimeCorrectionNeeded/012007~~2025_08_25__13_04_02_436_fit.csv'
+spectra_file_path <- '/Users/kelvinacebron/Documents/1_IBG2/2_Materials/LIFT_ANALYSIS/Sample_data/TimeCorrectionNeeded/003004~~2025_08_25__12_09_19_859_spectr.csv'
+
+# Set time threshold for minimum difference needed between filename and content
+time_threshold <- 5 * 60
+
+# Define time discrepancy
+computer_time <- as.POSIXct("2025-08-21 15:48:00", tz = "CET")
+actual_time   <- as.POSIXct("2025-08-25 12:36:00", tz = "CET")
+
+# Offset difference
+time_offset <- difftime(actual_time, computer_time, units = "secs")
+
+newdf <- adjust_dt_datacsv(data_file_path, data_file_dt, time_threshold, time_offset)
+newdf <- adjust_dt_fitcsv(fit_file_path, fit_file_dt, time_threshold, time_offset)
+newdf <- adjust_dt_spectra(spectra_file_path, spectra_file_dt, time_threshold, time_offset)
+
+# This is a more robust code if you want to change all your files in the folder (works only on a single date)
+folder_path <- "/Users/kelvinacebron/Documents/1_IBG2/2_Materials/LIFT_ANALYSIS/Sample_data/TimeCorrectionNeeded"
+
+# --- Loop through all CSV files in folder ---
+files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+
+for (f in files) {
+  adjust_dt_by_filetype(f, time_threshold, time_offset)
+}
+
+
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+This is a sample workflow to derive photosynthetic and statistical parameters 
+```{r}
+# Set Settings
+settings <- lift_settings()
 
-```{r cars}
-summary(cars)
+# Load Raw LIFT files
+fnames <- list.files("/Users/kelvinacebron/Documents/1_IBG2/2_Materials/LIFT_ANALYSIS/Sample_data/TimeCorrectionNeeded", pattern = "_data.csv")
+
+my_raw <- lift_load_raw(
+   fpath = "/Users/kelvinacebron/Documents/1_IBG2/2_Materials/LIFT_ANALYSIS/Sample_data/TimeCorrectionNeeded",
+   fnames = fnames,
+   f = 427,
+   sep = ","
+ )
+
+# Parse raw data
+clean <- lift_parse_metadata(my_raw, f = 427)
+
+# Calculate Fq.Fm, Fr's and regression fitting
+data_fit <- redox_fit(clean, f = 427, method = c("absolute", "relative"), regression = TRUE)
+
+write.csv(data_fit, "/Users/kelvinacebron/Documents/1_IBG2/2_Materials/LIFT_ANALYSIS/Sample_output/sample_output_package.csv")
+
+# End
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
