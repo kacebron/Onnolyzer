@@ -10,7 +10,7 @@
 #' @return data.table with added columns: Fo, Fm, Fq.Fm, Relative, Fr1, Fr2, Fr
 #' 
 #'  Also can perform Log-Log Regression on LIFT Fluorescence Data
-#'
+#' @export
 redox_fit <- function(df, f, method = c("relative", "absolute"), regression = TRUE) {
 
   # Ensure df is a data.table
