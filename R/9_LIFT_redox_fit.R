@@ -17,8 +17,8 @@ redox_fit <- function(df, f, method = c("relative", "absolute"), regression = TR
   df <- data.table::as.data.table(df)
 
   # --- Reduction step ---
-  df$Fo <- rep(df[DataPt %in% 1, mean(get("EM")), by = .(Target_ID, TimeSec)]$V1, each = f + 1)
-  df$Fm <- rep(df[DataPt %in% 298:302, max(get("EM")), by = .(Target_ID, TimeSec)]$V1, each = f + 1)
+  df$Fo <- rep(df[DataPt %in% 1, mean(df$EM), by = .(Target_ID, TimeSec)]$V1, each = f + 1)
+  df$Fm <- rep(df[DataPt %in% 298:302, max(df$EM), by = .(Target_ID, TimeSec)]$V1, each = f + 1)
   df$Fq.Fm <- (df$Fm - df$Fo) / df$Fm
   df$Relative <- (df$EM - df$Fo) / (df$Fm - df$Fo)
 

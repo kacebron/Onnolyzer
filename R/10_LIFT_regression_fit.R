@@ -20,7 +20,7 @@ regression_fit <- function(df, f, reorder_cols = TRUE) {
   df$EM <- df$EM + 1e-42
   
   # Define Groups
-  df$Group <- rep((df[DataPt %in% 1:f, paste(0), by = .(Target_ID, TimeSec)])$V1, each = f)
+  df$Group <- rep((df[df$DataPt %in% 1:f, paste(0), by = .(Target_ID, TimeSec)])$V1, each = f)
   df$Group[df$DataPt %in% c(paste(df$DataPt[303:320]))] <- 1
   df$Group[df$DataPt %in% c(paste(df$DataPt[321:360]))] <- 2
   
