@@ -12,11 +12,11 @@ redox_fit(df, f, method = c("relative", "absolute"), regression = TRUE)
 \item{f}{integer, number of excitation flashlets (e.g. 427)}
 
 \item{method}{character vector, one or both of "relative"/"Keller" and "absolute"/"Zendonadi"}
+
+\item{regression}{logical; if TRUE, run regression_fit() and return its result}
 }
 \value{
-data.table with added columns: Fo, Fm, Fq.Fm, Relative, Fr1, Fr2, Fr
-
-Also can perform Log-Log Regression on LIFT Fluorescence Data
+data.table with added columns (or the regression result if regression = TRUE)
 }
 \description{
 Calculates fluorescence reduction parameters (Fo, Fm, Fq/Fm, Relative)
