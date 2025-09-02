@@ -10,11 +10,6 @@
 #' @importFrom stats na.omit lm summary.lm
 #' @export
 regression_fit <- function(df, f, reorder_cols = TRUE) {
-
-  if (getRversion() >= "2.15.1") {
-    utils::globalVariables(c("DataPt", "Target_ID", "TimeSec", "Group", "."))
-  }
-
   # Remove DataPt == 0
   df <- subset(df, DataPt != 0)
 
@@ -105,6 +100,11 @@ regression_fit <- function(df, f, reorder_cols = TRUE) {
   regression_fit <- Final_Data[!duplicated(Final_Data$TimeSec), ]
 
   return(regression_fit)
+}
+
+
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c("DataPt", "Target_ID", "TimeSec", "Group", "."))
 }
 
 # End

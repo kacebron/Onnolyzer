@@ -7,15 +7,9 @@
 #' @param f integer, number of excitation flashlets (e.g. 427)
 #' @param method character vector, one or both of "relative"/"Keller" and "absolute"/"Zendonadi"
 #' @param regression logical; if TRUE, run regression_fit() and return its result
-#'
 #' @return data.table with added columns (or the regression result if regression = TRUE)
 #' @export
 redox_fit <- function(df, f, method = c("relative", "absolute"), regression = TRUE) {
-
-  if (getRversion() >= "2.15.1") {
-    utils::globalVariables(c("DataPt", "Target_ID", "TimeSec", "Group", "."))
-  }
-
   # Ensure df is a data.table
   df <- data.table::as.data.table(df)
 
@@ -126,6 +120,10 @@ redox_fit <- function(df, f, method = c("relative", "absolute"), regression = TR
     redox_fit <- redox_fit[!duplicated(redox_fit$TimeSec), ]
     return(redox_fit)
   }
+}
+
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c("DataPt", "Target_ID", "TimeSec", "Group", "."))
 }
 
 # End
