@@ -3,38 +3,42 @@
 #' This function calculates slopes, intercepts, and other regression parameters
 #' for two groups of a LIFT transient dataset.
 #'
-#' @param Transient A data.table containing cleaned LIFT transient data.
+#' @param df A data.table containing cleaned LIFT transient data.
 #' @param f Integer, number of flashlets per transient (used for grouping).
 #' @param reorder_cols Logical, whether to reorder columns (default: TRUE)
-#' 
 #' @return A data.table containing merged regression results for Group 1 and Group 2.
-#' 
+#' @importFrom stats na.omit lm summary.lm
 #' @export
 regression_fit <- function(df, f, reorder_cols = TRUE) {
+
+  if (getRversion() >= "2.15.1") {
+    utils::globalVariables(c("DataPt", "Target_ID", "TimeSec", "Group", "."))
+  }
+
   # Remove DataPt == 0
   df <- subset(df, DataPt != 0)
-  
+
   # Avoid negative values for log regression
   df$EM <- df$EM^2
   df$EM <- sqrt(df$EM)
   df$EM <- df$EM + 1e-42
-  
+
   # Define Groups
   df$Group <- rep((df[df$DataPt %in% 1:f, paste(0), by = .(Target_ID, TimeSec)])$V1, each = f)
   df$Group[df$DataPt %in% c(paste(df$DataPt[303:320]))] <- 1
   df$Group[df$DataPt %in% c(paste(df$DataPt[321:360]))] <- 2
-  
+
   # Split by Group
   Target_ID_G1 <- subset(df, Group == 1)
   Target_ID_G2 <- subset(df, Group == 2)
-  
+
   # Regression function for each Target_ID
   calc_slopes <- function(df_group) {
     tmp_list <- plyr::dlply(df_group, .variables = c("Filename_Source", "Target_ID"))
     for (i in seq_along(tmp_list)) {
       tmp <- lm(log(tmp_list[[i]][["EM"]]) ~ log(tmp_list[[i]][["Time.us"]]), data = tmp_list[[i]])
       tmp_summary <- summary.lm(tmp)
-      
+
       tmp_list[[i]][["Slope"]]        <- tmp_summary$coefficients[2,1]
       tmp_list[[i]][["Slope_SE"]]     <- tmp_summary$coefficients[2,2]
       tmp_list[[i]][["Intercept"]]    <- tmp_summary$coefficients[1,1]
@@ -53,14 +57,14 @@ regression_fit <- function(df, f, reorder_cols = TRUE) {
     dt <- dt[with(dt, order(TimeSec, DataPt)), ]
     return(dt)
   }
-  
+
   # Calculate slopes for Group 1 & 2
   Target_ID_G1 <- calc_slopes(Target_ID_G1)
   Target_ID_G2 <- calc_slopes(Target_ID_G2)
-  
+
   # Merge back
   Target_ID_Data <- rbind(Target_ID_G1, Target_ID_G2)
-  
+
   Target_ID_Slps <- subset(Target_ID_Data, DataPt == 303 | DataPt == 321)
 
   # Optional: reorder columns
@@ -97,7 +101,7 @@ regression_fit <- function(df, f, reorder_cols = TRUE) {
            "Fr2.Fq", "Fr.Fq", "Fr1.Fm", "Fr2.Fm", "Fr.Fm"),
     all = TRUE
   )
-  
+
   regression_fit <- Final_Data[!duplicated(Final_Data$TimeSec), ]
 
   return(regression_fit)

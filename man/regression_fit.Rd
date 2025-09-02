@@ -7,11 +7,11 @@
 regression_fit(df, f, reorder_cols = TRUE)
 }
 \arguments{
+\item{df}{A data.table containing cleaned LIFT transient data.}
+
 \item{f}{Integer, number of flashlets per transient (used for grouping).}
 
 \item{reorder_cols}{Logical, whether to reorder columns (default: TRUE)}
-
-\item{Transient}{A data.table containing cleaned LIFT transient data.}
 }
 \value{
 A data.table containing merged regression results for Group 1 and Group 2.

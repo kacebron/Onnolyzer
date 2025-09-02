@@ -11,6 +11,11 @@
 #' @return data.table with added columns (or the regression result if regression = TRUE)
 #' @export
 redox_fit <- function(df, f, method = c("relative", "absolute"), regression = TRUE) {
+
+  if (getRversion() >= "2.15.1") {
+    utils::globalVariables(c("DataPt", "Target_ID", "TimeSec", "Group", "."))
+  }
+
   # Ensure df is a data.table
   df <- data.table::as.data.table(df)
 
